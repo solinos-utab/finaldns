@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Sistem - FinalDNS Server</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --bg: #f8fafc;
+            --text: #334155;
+            --heading: #0f172a;
+            --code-bg: #f1f5f9;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        h1, h2, h3 {
+            color: var(--heading);
+            margin-top: 2em;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            color: var(--primary);
+        }
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        h3 {
+            font-size: 1.4rem;
+            color: var(--secondary);
+        }
+        p { margin-bottom: 1.2em; }
+        ul, ol { margin-bottom: 1.5em; padding-left: 25px; }
+        li { margin-bottom: 0.5em; }
+        code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: #d946ef;
+        }
+        pre {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+        .feature-box {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .feature-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: block;
+            font-size: 1.1em;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        .badge-new { background: #dbeafe; color: #1e40af; }
+        .badge-security { background: #fee2e2; color: #991b1b; }
+        .badge-speed { background: #dcfce7; color: #166534; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        th { background: var(--code-bg); font-weight: 600; }
+        
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.9em;
+            color: #64748b;
+        }
+        .btn-download {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .btn-download:hover { background: var(--secondary); }
+    </style>
+</head>
+<body>
+
+    <h1>Manual Sistem FinalDNS Server</h1>
+    <p><strong>Versi Dokumen:</strong> 2.5 (Updated Feb 2026)</p>
+    
+    <a href="/static/manual.pdf" class="btn-download" target="_blank">📥 Download Versi PDF</a>
+
+    <div class="feature-box">
+        <span class="feature-title">Ringkasan Sistem</span>
+        <p>FinalDNS adalah sistem DNS Server berkinerja tinggi yang dirancang khusus untuk lingkungan ISP dan Corporate. Sistem ini menggabungkan keamanan (Security Shield), kecepatan (CDN Optimization), dan keandalan (High Availability).</p>
+    </div>
+
+    <h2>1. Dashboard & Monitoring</h2>
+    <p>Dashboard utama memberikan pandangan real-time mengenai kesehatan jaringan DNS Anda:</p>
+    <ul>
+        <li><strong>Traffic Analysis:</strong> Grafik live yang menampilkan Query per Second (QPS), Total Queries, dan Ratio Blokir.</li>
+        <li><strong>System Status:</strong> Monitoring penggunaan CPU, RAM, dan Disk secara real-time.</li>
+        <li><strong>Top Clients & Domains:</strong> Analisis klien yang paling aktif dan domain yang paling sering diakses.</li>
+    </ul>
+
+    <h2>2. Security Shield (Sistem Keamanan)</h2>
+    <p><span class="badge badge-security">Security</span> Fitur perlindungan aktif yang dapat diaktifkan/dinonaktifkan secara instan melalui dashboard.</p>
+    
+    <h3>Komponen Security Shield:</h3>
+    <ul>
+        <li><strong>Malware Protection:</strong> Memblokir domain yang terindikasi menyebarkan malware, ransomware, dan phising.</li>
+        <li><strong>Internet Positif:</strong> Kepatuhan terhadap regulasi pemblokiran konten negatif (Judi, Pornografi, SARA).</li>
+        <li><strong>External Threats:</strong> Perlindungan terhadap botnet, C2 servers, dan crypto miners.</li>
+        <li><strong>Custom Blacklist:</strong> Daftar blokir manual yang dapat Anda atur sendiri.</li>
+    </ul>
+
+    <div class="feature-box">
+        <span class="feature-title">Cara Menggunakan Toggle Security Shield</span>
+        <ol>
+            <li>Buka Dashboard Web GUI.</li>
+            <li>Cari panel <strong>"SECURITY SHIELD"</strong> di pojok kanan atas.</li>
+            <li>Klik tombol toggle untuk mengaktifkan (Hijau/Active) atau menonaktifkan (Merah/Disabled).</li>
+            <li>Perubahan berlaku <strong>instan</strong> tanpa perlu restart manual.</li>
+        </ol>
+    </div>
+
+    <h2>3. Gaming Optimization (Game Mode)</h2>
+    <p><span class="badge badge-speed">Performance</span> <span class="badge badge-new">New</span></p>
+    <p>Sistem ini dilengkapi dengan <strong>Aggressive Gaming Whitelist</strong> yang memastikan trafik game online tidak akan pernah terblokir dan mendapatkan prioritas rute.</p>
+    
+    <h3>Fitur Game Mode:</h3>
+    <ul>
+        <li><strong>Bypass Filtering:</strong> Domain game (Steam, Epic, Riot, EA, Mobile Legends, PUBG, dll) di-whitelist secara permanen.</li>
+        <li><strong>Direct Routing:</strong> Menggunakan rute tercepat untuk koneksi ke server game, mengurangi latensi (ping).</li>
+        <li><strong>EA / FIFA Fix:</strong> Perbaikan khusus untuk masalah koneksi "prepaired game" pada EA FC25/FIFA.</li>
+    </ul>
+    <p><strong>Config File:</strong> <code>/etc/dnsmasq.d/05-gaming-whitelist.conf</code></p>
+
+    <h2>4. Streaming & Smart TV Optimization</h2>
+    <p><span class="badge badge-speed">Performance</span> <span class="badge badge-new">New</span></p>
+    <p>Optimasi khusus untuk perangkat Android TV, Google TV, dan layanan streaming populer.</p>
+
+    <h3>Perbaikan Utama:</h3>
+    <ul>
+        <li><strong>MTU Fix (Packet Fragmentation):</strong> Mengatur <code>edns-packet-max=1232</code> untuk mencegah buffering pada jaringan PPPoE/IndiHome.</li>
+        <li><strong>Connectivity Checks:</strong> Whitelist untuk pengecekan koneksi Android/Google TV (mencegah status "No Internet").</li>
+        <li><strong>Supported Services:</strong> Optimasi khusus untuk Vidio, WeTV, Netflix, Disney+, Viu, Vision+.</li>
+        <li><strong>NTP Sync:</strong> Memastikan sinkronisasi waktu akurat untuk DRM streaming.</li>
+    </ul>
+    <p><strong>Config File:</strong> <code>/etc/dnsmasq.d/98-streaming-optimization.conf</code></p>
+
+    <h2>5. CDN Optimization (Turbo Mode)</h2>
+    <p><span class="badge badge-speed">Speed</span> <span class="badge badge-new">New</span></p>
+    <p>Untuk mempercepat loading konten berat (Video, Gambar), sistem melakukan <strong>Direct Routing</strong> ke Public DNS tercepat (8.8.8.8 / 1.1.1.1) untuk penyedia konten utama.</p>
+    
+    <table>
+        <tr>
+            <th>Provider</th>
+            <th>Metode Optimasi</th>
+        </tr>
+        <tr>
+            <td>Google / YouTube</td>
+            <td>Bypass Local -> Direct 8.8.8.8</td>
+        </tr>
+        <tr>
+            <td>Meta (FB/IG/WA)</td>
+            <td>Bypass Local -> Direct 8.8.8.8</td>
+        </tr>
+        <tr>
+            <td>Cloudflare / TikTok</td>
+            <td>Bypass Local -> Direct 1.1.1.1 / 8.8.8.8</td>
+        </tr>
+        <tr>
+            <td>Netflix / Apple / Microsoft</td>
+            <td>Bypass Local -> Direct 8.8.8.8</td>
+        </tr>
+    </table>
+    <p><strong>Config File:</strong> <code>/etc/dnsmasq.d/99-cdn-optimization.conf</code></p>
+
+    <h2>6. Manajemen & Troubleshooting</h2>
+    
+    <h3>Restart Service</h3>
+    <p>Jika Anda melakukan perubahan konfigurasi manual, Anda dapat merestart layanan DNS melalui menu <strong>"System Control" -> "Restart DNS Service"</strong> di dashboard.</p>
+
+    <h3>Flush Cache</h3>
+    <p>Jika domain yang seharusnya bisa diakses masih terblokir (atau sebaliknya), gunakan fitur <strong>"Flush DNS Cache"</strong> untuk membersihkan memori DNS.</p>
+
+    <h3>Backup & Restore</h3>
+    <p>Sistem dilengkapi dengan script auto-installer dan backup penuh. Folder backup tersimpan di <code>/home/dns/finaldns_backup/</code>.</p>
+
+    <div class="footer">
+        &copy; 2026 PT Mars Data Telekomunikasi. All Rights Reserved.<br>
+        Dokumentasi Sistem FinalDNS v2.5
+    </div>
+
+</body>
+</html>
