@@ -232,8 +232,21 @@ def clean_banned_ips():
         log_event(f"Error cleaning banned IPs: {e}")
 
 def is_whitelisted(ip):
-    # User wants NO IP blocking at all.
-    return True
+    # Check individual IPs
+    if ip in WHITELIST:
+        return True
+    
+    # Check subnets
+    import ipaddress
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+        for subnet in WHITELIST_SUBNETS:
+            if ip_obj in ipaddress.ip_network(subnet):
+                return True
+    except Exception:
+        pass
+        
+    return False
 
 APP_WHITELIST = {
     # --- Learning ---
@@ -477,7 +490,7 @@ def analyze_logs():
                         domain = match_query.group(2).lower()
                         ip = match_query.group(3)
                         
-                        if qtype == "ANY" and not is_whitelisted(ip):
+                        if qtype == "ANY":
                             if ip not in any_query_stats:
                                 any_query_stats[ip] = {}
                             any_query_stats[ip][domain] = any_query_stats[ip].get(domain, 0) + 1
