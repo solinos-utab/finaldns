@@ -58,8 +58,8 @@ ssh -p $SSH_PORT "$SSH_USER@$SECONDARY_IP" "sudo grep -rl '103.68.213.74' /etc/d
 echo "Enforcing Local Resolver (127.0.0.1) on Secondary..."
 ssh -p $SSH_PORT "$SSH_USER@$SECONDARY_IP" "echo 'nameserver 127.0.0.1' | sudo tee /etc/resolv.conf > /dev/null"
 
-# Restart Services on Secondary after IP fix
-echo "Restarting services on Secondary..."
-ssh -p $SSH_PORT "$SSH_USER@$SECONDARY_IP" "sudo systemctl restart unbound dnsmasq"
+# Reload Services on Secondary after IP fix
+echo "Reloading services on Secondary..."
+ssh -p $SSH_PORT "$SSH_USER@$SECONDARY_IP" "sudo systemctl reload unbound dnsmasq"
 
 echo "[Mon Feb 16 05:51:33 AM WIB 2026] Sync Completed!"

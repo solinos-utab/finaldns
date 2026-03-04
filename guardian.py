@@ -454,7 +454,7 @@ def block_domain_guardian(domain):
             f.write(f"\naddress=/{domain}/0.0.0.0\n")
         
         log_event(f"BLOCKED DOMAIN: {domain} (High Frequency Attack)")
-        run_cmd("systemctl restart dnsmasq")
+        run_cmd("systemctl reload dnsmasq")
     except Exception as e:
         log_event(f"Error blocking domain {domain}: {e}")
 
@@ -608,8 +608,8 @@ def sync_blocking_config(dns_trust):
             log_event(f"Error syncing {file_path}: {e}")
             
     if changed:
-        log_event("Restarting dnsmasq to apply Blocking sync changes...")
-        run_cmd("sudo systemctl restart dnsmasq")
+        log_event("Reloading dnsmasq to apply Blocking sync changes...")
+        run_cmd("sudo systemctl reload dnsmasq")
 
 def is_dns_resolving():
     # Try to resolve a common domain via localhost
