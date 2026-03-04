@@ -550,6 +550,7 @@
                         <div class="flex justify-between items-center"><span class="text-xs text-slate-400">DNSMASQ</span><span id="status-dnsmasq" class="text-xs font-orbitron">...</span></div>
                         <div class="flex justify-between items-center"><span class="text-xs text-slate-400">UNBOUND</span><span id="status-unbound" class="text-xs font-orbitron">...</span></div>
                         <div class="flex justify-between items-center"><span class="text-xs text-slate-400">DNSSEC</span><span id="status-dnssec" class="text-xs font-orbitron">...</span></div>
+                        <div class="flex justify-between items-center"><span class="text-xs text-slate-400">ECS (Subnet)</span><span id="status-ecs" class="text-xs font-orbitron">...</span></div>
                         <div class="flex justify-between items-center"><span class="text-xs text-slate-400">NAT INTCP</span><span id="status-iptables" class="text-xs font-orbitron">...</span></div>
                     </div>
                 </div>
@@ -2594,6 +2595,7 @@ sudo bash setup_secondary.sh ${primaryIp} ${syncToken}
                     updateElementStatus('dnsmasq', data.dnsmasq);
                     updateElementStatus('unbound', data.unbound);
                     updateElementStatus('dnssec', data.dnssec);
+                    updateElementStatus('ecs', data.ecs);
                     updateElementStatus('guardian', data.guardian);
                     
                     const flood = safeGet(data, 'security.flood_protection', false);
@@ -2626,37 +2628,50 @@ sudo bash setup_secondary.sh ${primaryIp} ${syncToken}
                     updateMetricValue('perf', perf);
 
                     // Pre-fill Network Form if empty
-                    if (!document.getElementById('ip4-addr-input').value) {
-                        document.getElementById('ip4-addr-input').value = safeGet(data, 'network.ip4', '');
-                        document.getElementById('ip4-gw-input').value = safeGet(data, 'network.ip4_gw', '');
-                        document.getElementById('ip6-addr-input').value = safeGet(data, 'network.ip6', '');
-                        document.getElementById('ip6-gw-input').value = safeGet(data, 'network.ip6_gw', '');
-                        document.getElementById('ipv6-toggle').checked = safeGet(data, 'network.ipv6_enabled', false);
+                    const ip4Input = document.getElementById('ip4-addr-input');
+                    if (ip4Input && !ip4Input.value) {
+                        ip4Input.value = safeGet(data, 'network.ip4', '');
+                        const ip4gw = document.getElementById('ip4-gw-input');
+                        if (ip4gw) ip4gw.value = safeGet(data, 'network.ip4_gw', '');
+                        
+                        const ip6 = document.getElementById('ip6-addr-input');
+                        if (ip6) ip6.value = safeGet(data, 'network.ip6', '');
+                        
+                        const ip6gw = document.getElementById('ip6-gw-input');
+                        if (ip6gw) ip6gw.value = safeGet(data, 'network.ip6_gw', '');
+                        
+                        const v6toggle = document.getElementById('ipv6-toggle');
+                        if (v6toggle) v6toggle.checked = safeGet(data, 'network.ipv6_enabled', false);
                     }
                     
                     // Update DNS Trust Status
-                    document.getElementById('trust-ip-input').value = safeGet(data, 'trust.ip', '');
+                    const trustIpInput = document.getElementById('trust-ip-input');
+                    if (trustIpInput) {
+                        trustIpInput.value = safeGet(data, 'trust.ip', '');
+                    }
+                    
                     const trustToggle = document.getElementById('trust-toggle');
                     if (trustToggle && document.activeElement !== trustToggle) {
                         trustToggle.checked = safeGet(data, 'trust.enabled', false);
                     }
 
-                    // Pre-fill Whitelist if empty
-                    // Use combined whitelist (IPs + Domains) so user sees everything
+                    // Pre-fill Whitelist if empty or if user hasn't modified it
                     const whitelist = safeGet(data, 'security.whitelist', []);
                     const wlInput = document.getElementById('whitelist-input');
                     
                     if (wlInput) {
-                        // Auto-populate logic:
-                        // 1. If this is the FIRST time we have data (wlInput was totally empty)
-                        // 2. OR if the user hasn't manually touched the input during this session
-                        if (!window.whitelistManuallyCleared) {
-                            // Only update if value is actually different to avoid cursor jumping
-                            const newValue = whitelist.join('\n');
-                            if (wlInput.value.trim() !== newValue.trim() && (wlInput.value.trim() === '' || !window.whitelistFirstPopulated)) {
+                        const newValue = whitelist.join('\n');
+                        const currentValue = wlInput.value.trim();
+                        
+                        // Populate if:
+                        // 1. It's the first time we have data
+                        // 2. OR the user hasn't manually touched the input during this session
+                        if (!window.whitelistFirstPopulated || !window.whitelistManuallyCleared) {
+                            if (currentValue !== newValue) {
                                 wlInput.value = newValue;
+                                window.lastServerWhitelist = newValue;
                                 window.whitelistFirstPopulated = true;
-                                console.log("Whitelist populated with " + whitelist.length + " entries");
+                                console.log("Whitelist populated/updated from server");
                             }
                         }
                     }

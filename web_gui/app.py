@@ -2852,6 +2852,26 @@ def status():
     except:
         pass
 
+    # Check ECS (EDNS Client Subnet) status
+    ecs_active = False
+    try:
+        # Check Unbound modules for subnet
+        # Improved: Check both modules and control status with fallback
+        res = subprocess.run(['/usr/sbin/unbound-control', 'status'], capture_output=True, text=True, timeout=2)
+        if res.returncode == 0:
+            if 'subnet' in res.stdout or 'ecs' in res.stdout.lower():
+                ecs_active = True
+        else:
+            # Fallback: check unbound modules directly via config if possible
+            if os.path.exists('/etc/unbound/unbound.conf'):
+                with open('/etc/unbound/unbound.conf', 'r') as f:
+                    conf_content = f.read()
+                    if 'subnetcache' in conf_content:
+                        ecs_active = True
+    except Exception as e:
+        print(f"ECS Check Error: {e}")
+        pass
+
     # Guardian Logs
     guardian_logs = []
     if os.path.exists('/home/dns/guardian.log'):
@@ -2873,7 +2893,8 @@ def status():
                 lines = [line.strip() for line in f.readlines() if line.strip() and not line.startswith('#')]
                 whitelist.extend(lines)
                 whitelist_ips.extend(lines)
-        except:
+        except Exception as e:
+            print(f"Whitelist Load Error (IPs): {e}")
             pass
 
     # 2. Load Domains from Custom Trust
@@ -2883,13 +2904,14 @@ def status():
                 lines = [line.strip() for line in f.readlines() if line.strip() and not line.startswith('#')]
                 whitelist.extend(lines)
                 whitelist_domains.extend(lines)
-        except:
+        except Exception as e:
+            print(f"Whitelist Load Error (Domains): {e}")
             pass
     
-    # Deduplicate
-    whitelist = list(set(whitelist))
-    whitelist_ips = list(set(whitelist_ips))
-    whitelist_domains = list(set(whitelist_domains))
+    # Deduplicate and sort
+    whitelist = sorted(list(set(whitelist)))
+    whitelist_ips = sorted(list(set(whitelist_ips)))
+    whitelist_domains = sorted(list(set(whitelist_domains)))
 
     # HDD Usage
     hdd_usage = 0
@@ -2907,6 +2929,7 @@ def status():
         'dnsmasq': get_service_status('dnsmasq'),
         'unbound': get_service_status('unbound'),
         'dnssec': dnssec_active,
+        'ecs': ecs_active,
         'resolved': get_service_status('systemd-resolved'),
         'guardian': get_service_status('guardian'),
         'iptables': fw_status.get('nat', False) if isinstance(fw_status, dict) else False,
