@@ -102,7 +102,7 @@
     </div>
 
     <!-- Login Modal -->
-    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
         <div class="glass p-8 rounded-3xl w-full max-w-md space-y-6 border border-blue-500/30">
             <div class="text-center">
                 <h2 class="text-2xl font-orbitron text-white mb-2">ACCESS LOCKED</h2>
@@ -755,6 +755,7 @@
                                 <option value="AAAA">AAAA</option>
                                 <option value="MX">MX</option>
                                 <option value="TXT">TXT</option>
+                                <option value="ANY">ANY</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-1 gap-2">
@@ -1759,7 +1760,12 @@
                 
                 if (res.ok) {
                     document.getElementById('login-modal').classList.add('hidden');
-                    updateMetrics(); // This will trigger the firstRunDone block which starts all other loops
+                    // Reset global state to ensure fresh start
+                    window.firstRunDone = false;
+                    updateMetrics();
+                    loadGuardianConfig();
+                    updateHAStatus();
+                    fetchSyncInfo();
                 } else {
                     error.classList.remove('hidden');
                 }
@@ -4434,23 +4440,10 @@ sudo bash setup_secondary.sh ${primaryIp} ${syncToken}
             }
 
             // Check authentication and start loops
-            fetch('/api/status')
-                .then(r => r.json())
-                .then(d => {
-                    if (d.authenticated) {
-                        console.log("User authenticated, starting metrics...");
-                        loadGuardianConfig();
-                        updateMetrics();
-                        updateHAStatus();
-                        fetchSyncInfo();
-                    } else {
-                        console.log("User not authenticated");
-                    }
-                })
-                .catch(e => {
-                    console.error("Auth check failed:", e);
-                    updateMetrics();
-                });
+            updateMetrics();
+            loadGuardianConfig();
+            updateHAStatus();
+            fetchSyncInfo();
         });
 function updateHAStatus() {
     fetch("/api/ha/status")

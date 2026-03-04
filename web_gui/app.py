@@ -216,9 +216,32 @@ def get_high_traffic_candidates():
 
     results = []
     try:
-        # STRICT MODE: Only detect Rate Limiting (High Volume)
-        # Keyword and Pattern detection REMOVED per user request.
+        # --- 1. Detect ANY Query Attacks (Priority) ---
+        any_results = []
+        try:
+            # Search for ANY queries in recent logs
+            cmd_any = "sudo tail -n 10000 /var/log/dnsmasq.log | grep 'query\\[ANY\\]' | awk '{print $6}' | sort | uniq -c | sort -nr | head -n 20"
+            output_any = subprocess.check_output(cmd_any, shell=True).decode('utf-8', errors='ignore')
+            
+            for line in output_any.split('\n'):
+                parts = line.strip().split()
+                if len(parts) >= 2:
+                    count = int(parts[0])
+                    domain = parts[1]
+                    domain_lower = domain.lower()
+                    
+                    if domain_lower in whitelist: continue
+                    if domain_lower in blacklist: continue
+                    
+                    results.append({
+                        'domain': domain,
+                        'type': "⚠️ ANY QUERY DETECTED",
+                        'count': count
+                    })
+        except Exception as e:
+            print(f"ANY detection error: {e}")
 
+        # --- 2. Detect High Volume (Rate Limit) ---
         # Get Top 50 queried domains from recent logs
         cmd = "sudo tail -n 50000 /var/log/dnsmasq.log | grep 'query\\[' | awk '{print $6}' | sort | uniq -c | sort -nr | head -n 50"
         output = subprocess.check_output(cmd, shell=True).decode('utf-8', errors='ignore')
@@ -1575,11 +1598,11 @@ def get_unbound_stats():
                      # Restart detected, reset baseline
                      pass 
                 else:
-                    result['queries'] = (current_stats.get('total.num.queries', 0) - last_unbound_stats.get('total.num.queries', 0)) / time_diff
-                    result['cachehits'] = (current_stats.get('total.num.cachehits', 0) - last_unbound_stats.get('total.num.cachehits', 0)) / time_diff
-                    result['cachemiss'] = (current_stats.get('total.num.cachemiss', 0) - last_unbound_stats.get('total.num.cachemiss', 0)) / time_diff
-                    result['recursive'] = (current_stats.get('total.num.recursivereplies', 0) - last_unbound_stats.get('total.num.recursivereplies', 0)) / time_diff
-                    result['expired'] = (current_stats.get('total.num.expired', 0) - last_unbound_stats.get('total.num.expired', 0)) / time_diff
+                    result['queries'] = max(0, (current_stats.get('total.num.queries', 0) - last_unbound_stats.get('total.num.queries', 0)) / time_diff)
+                    result['cachehits'] = max(0, (current_stats.get('total.num.cachehits', 0) - last_unbound_stats.get('total.num.cachehits', 0)) / time_diff)
+                    result['cachemiss'] = max(0, (current_stats.get('total.num.cachemiss', 0) - last_unbound_stats.get('total.num.cachemiss', 0)) / time_diff)
+                    result['recursive'] = max(0, (current_stats.get('total.num.recursivereplies', 0) - last_unbound_stats.get('total.num.recursivereplies', 0)) / time_diff)
+                    result['expired'] = max(0, (current_stats.get('total.num.expired', 0) - last_unbound_stats.get('total.num.expired', 0)) / time_diff)
                     
                     # Store calculated rates for fallback
                     result['last_rates'] = True
@@ -2977,7 +3000,7 @@ def dig():
     qtype = data.get('qtype', 'A')
     
     domain = re.sub(r'[^a-zA-Z0-9.-]', '', domain)
-    if qtype not in ['A', 'AAAA', 'MX', 'TXT', 'NS']:
+    if qtype not in ['A', 'AAAA', 'MX', 'TXT', 'NS', 'ANY']:
         qtype = 'A'
         
     system_ips = get_system_ips()

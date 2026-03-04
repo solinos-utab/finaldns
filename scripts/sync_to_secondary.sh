@@ -60,6 +60,7 @@ ssh -p $SSH_PORT "$SSH_USER@$SECONDARY_IP" "echo 'nameserver 127.0.0.1' | sudo t
 
 # Reload Services on Secondary after IP fix
 echo "Reloading services on Secondary..."
-ssh -p $SSH_PORT "$SSH_USER@$SECONDARY_IP" "sudo systemctl reload unbound dnsmasq"
+# Use try-reload-or-restart to avoid dropping active connections on client side
+ssh -p $SSH_PORT "$SSH_USER@$SECONDARY_IP" "sudo systemctl try-reload-or-restart unbound dnsmasq"
 
-echo "[Mon Feb 16 05:51:33 AM WIB 2026] Sync Completed!"
+echo "[$(date)] Sync Completed!"

@@ -498,14 +498,17 @@ def analyze_logs():
     except Exception as e:
         log_event(f"Error analyzing logs: {e}")
     
-    # PER-IP ANY QUERY LIMIT: 50/s = 3000/min
-    LIMIT_PER_MIN = 3000 
+    # PER-IP ANY QUERY LIMIT: 50/min (Sensitive detection for ANY attacks)
+    LIMIT_PER_MIN_ANY = 50 
     
     for ip, domains in any_query_stats.items():
         for domain, count in domains.items():
-            if count >= LIMIT_PER_MIN:
-                log_event(f"ANY ATTACK DETECTED: IP {ip} sent {count} ANY queries for {domain} in 1 min (>50/s).")
-                log_event(f"ACTION: Blocking domain {domain} globally.")
+            if count >= LIMIT_PER_MIN_ANY:
+                if is_domain_whitelisted(domain):
+                    log_event(f"SKIP ANY ATTACK: {domain} is whitelisted.")
+                    continue
+                log_event(f"ANY ATTACK DETECTED: IP {ip} sent {count} ANY queries for {domain} in 1 min.")
+                log_event(f"ACTION: Blocking domain {domain} globally and adding to blacklist.")
                 block_domain_guardian(domain)
                 # Note: We only block the domain to prevent amplification, 
                 # but we could also block the IP if needed by calling block_ip(ip).
@@ -609,7 +612,8 @@ def sync_blocking_config(dns_trust):
             
     if changed:
         log_event("Reloading dnsmasq to apply Blocking sync changes...")
-        run_cmd("sudo systemctl reload dnsmasq")
+        # Use reload instead of restart to avoid dropping active connections
+        run_cmd("sudo systemctl try-reload-or-restart dnsmasq")
 
 def is_dns_resolving():
     # Try to resolve a common domain via localhost
@@ -1024,9 +1028,13 @@ def enable_trust_logic(trust_ip=None):
             return
             
         run_cmd("sudo bash /home/dns/setup_firewall.sh")
-        run_cmd("sudo systemctl restart dnsmasq")
+        run_cmd("sudo systemctl try-reload-or-restart dnsmasq")
         # Unbound restart not strictly needed but good for cleanup
-        run_cmd("sudo systemctl restart unbound") 
+        run_cmd("sudo systemctl try-reload-or-restart unbound") 
+        
+        # SYNC TO SECONDARY: Trigger sync so Secondary also enables trust
+        log_event("Triggering sync to Secondary for DNS Trust...")
+        run_cmd("sudo bash /home/dns/dnsMars/scripts/sync_to_secondary.sh")
     except Exception as e:
         log_event(f"Failed to enable trust via schedule: {e}")
 
@@ -1043,7 +1051,11 @@ def disable_trust_logic():
         run_cmd("sudo rm -f /etc/dnsmasq.d/*.disabled")
             
         run_cmd("sudo bash /home/dns/setup_firewall.sh")
-        run_cmd("sudo systemctl restart dnsmasq")
+        run_cmd("sudo systemctl try-reload-or-restart dnsmasq")
+
+        # SYNC TO SECONDARY: Trigger sync so Secondary also disables trust
+        log_event("Triggering sync to Secondary for DNS Trust (Disable)...")
+        run_cmd("sudo bash /home/dns/dnsMars/scripts/sync_to_secondary.sh")
     except Exception as e:
         log_event(f"Failed to disable trust via schedule: {e}")
 
